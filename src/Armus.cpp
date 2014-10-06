@@ -19,6 +19,8 @@ const short CM_PER_ROTATION = 24;
 const float PI = 3.1415926535897932384626;
 const float CM_BETWEEN = 14.0;//13.8;
 
+const int MODIFICATION_INUTILE =0; // ;)
+
 void move_cm(short, short);
 void move_ticks(short, short);
 void turn_degrees(short, short);
