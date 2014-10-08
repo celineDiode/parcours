@@ -12,31 +12,30 @@
 #include <stdint.h>
 
 const short PAUSE = 500;
-const short TIMEOUT = 50;//25;
-const short SUBDIVISIONS = 10;//20;
+const short TIMEOUT = 50;//5;
+const short SUBDIVISIONS = 10;//100;
 const short TICK_PER_ROTATION = 64;
 const short CM_PER_ROTATION = 24;
 const float PI = 3.1415926535897932384626;
-const float CM_BETWEEN = 14.0;//13.8;
-
-const int MODIFICATION_INUTILE =0; // ;)
+const float CM_BETWEEN = 13.8;//14.0;
 
 void move_cm(short, short);
 void move_ticks(short, short);
 void turn_degrees(short, short);
+void turn_ticks(short, short);
 
 int main()
 {
-	short move_speed = 75;
+	short move_speed = 60;
 	short turn_speed = 40;
 
-	THREAD_MSleep(500);
+	THREAD_MSleep(PAUSE);
 
 	move_cm(220, move_speed);		THREAD_MSleep(PAUSE);
 
 	turn_degrees(90, -turn_speed);	THREAD_MSleep(PAUSE);
 
-	move_cm(50, move_speed);		THREAD_MSleep(PAUSE);
+	move_cm(45/*50*/, move_speed);	THREAD_MSleep(PAUSE);
 
 	turn_degrees(90, turn_speed);	THREAD_MSleep(PAUSE);
 
@@ -44,7 +43,7 @@ int main()
 
 	turn_degrees(90, turn_speed);	THREAD_MSleep(PAUSE);
 
-	move_cm(50, move_speed);		THREAD_MSleep(PAUSE);
+	move_cm(45/*50*/, move_speed);	THREAD_MSleep(PAUSE);
 
 	turn_degrees(90, -turn_speed);	THREAD_MSleep(PAUSE);
 
@@ -108,10 +107,6 @@ void move_ticks(short ticks, short ticks_per_second)
 			total_left  += temp_left;
 			total_right += temp_right;
 
-			/*LCD_ClearAndPrint("speed : %3d   %3d\n", speed_left, speed_right);
-				   LCD_Printf("total : %3d   %3d\n", total_left, total_right);
-				   LCD_Printf("ticks : %3d\n", ticks);*/
-
 			if(total_left >= ticks || total_right >= ticks)
 			{
 				MOTOR_SetSpeed(MOTOR_LEFT, 	0);
@@ -126,10 +121,43 @@ void move_ticks(short ticks, short ticks_per_second)
 	}
 }
 
+/*void move_ticks(short ticks, short ticks_per_second)
+{
+	short ticks_per_second_wanted = (ticks_per_second * TIMEOUT) / 1000;
+
+	short ticks_left = 0;
+	short ticks_right = 0;
+
+	short speed_left = 50;//ticks_per_second;
+	short speed_right = 50;//ticks_per_second;
+
+	ENCODER_Read(ENCODER_LEFT);
+	ENCODER_Read(ENCODER_RIGHT);
+
+	do
+	{
+		MOTOR_SetSpeed(MOTOR_RIGHT, speed_right);
+
+		THREAD_MSleep(TIMEOUT);
+
+		ticks_left  += ENCODER_Read(ENCODER_LEFT);
+		ticks_right += ENCODER_Read(ENCODER_RIGHT);
+
+		speed_right += (ticks_left - ticks_right);
+
+	} while(ticks_left < ticks || ticks_right < ticks);
+
+	MOTOR_SetSpeed(MOTOR_LEFT, 	0);
+	MOTOR_SetSpeed(MOTOR_RIGHT, 0);
+}*/
+
 void turn_degrees(short degrees, short speed)
 {
-	short ticks_wanted = (degrees * CM_BETWEEN * PI * TICK_PER_ROTATION) / (CM_PER_ROTATION * 360);
+	turn_ticks((degrees * CM_BETWEEN * PI * TICK_PER_ROTATION) / (CM_PER_ROTATION * 360), speed);
+}
 
+void turn_ticks(short ticks, short speed)
+{
 	short ticks_left = 0;
 	short ticks_right = 0;
 
@@ -141,12 +169,12 @@ void turn_degrees(short degrees, short speed)
 
 	do
 	{
-		THREAD_MSleep(TIMEOUT);
+		THREAD_MSleep(1);
 
 		ticks_left  += ENCODER_Read(ENCODER_LEFT);
 		ticks_right += ENCODER_Read(ENCODER_RIGHT);
 
-	} while(ticks_left < ticks_wanted && ticks_right < ticks_wanted);
+	} while(ticks_left < ticks && ticks_right < ticks);
 
 	MOTOR_SetSpeed(MOTOR_LEFT, 	0);
 	MOTOR_SetSpeed(MOTOR_RIGHT, 0);
